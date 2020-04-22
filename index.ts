@@ -18,6 +18,7 @@ app.get('/users/:id', users.getUserById)
 app.get('/users_unconfirmed', users.getUnconfirmedUsers)
 app.post('/users', users.createUser)
 app.post('/users/get_user_by_username', users.getUserByUsername)
+app.post('/users/confirm_user', users.updateUserConfirmation);
 app.put('/users/:id', users.updateUser)
 app.delete('/users/:id', users.deleteUser)
 

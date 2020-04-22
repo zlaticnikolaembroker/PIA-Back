@@ -28,7 +28,7 @@ module.exports.getUserById = (request, response) => {
 }
 
 module.exports.getUserByUsername = (request, response) => {
-  const username = request.body.username
+  const username = request.body.username;
 
   const querystring = 'SELECT * FROM users WHERE username = \'' + username + '\' and confirmed = true';
 
@@ -42,13 +42,28 @@ module.exports.getUserByUsername = (request, response) => {
 
 module.exports.getUnconfirmedUsers = (request, response) => {
 
-  const querystring = 'SELECT * FROM users WHERE confirmed = false or confirmed is null';
+  const querystring = 'SELECT * FROM users WHERE confirmed is null';
 
   pool.query(querystring, (error , results) => {
     if (error) {
       response.status(500).send(error)
     }
     response.status(200).send(results ? results.rows : []);
+  });
+}
+
+module.exports.updateUserConfirmation = (request, response) => {
+
+  const userId = request.body.id;
+  const confirmation = request.body.confirmation;
+
+  const querystring = 'UPDATE users set confirmed = \'' + confirmation + '\' where id = ' + userId;
+
+  pool.query(querystring, (error , results) => {
+    if (error) {
+      response.status(500).send(error)
+    }
+    response.status(200).send();
   });
 }
 
