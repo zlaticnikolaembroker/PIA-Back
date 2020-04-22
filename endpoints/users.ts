@@ -44,23 +44,22 @@ module.exports.getUnconfirmedUsers = (request, response) => {
 
   const querystring = 'SELECT * FROM users WHERE confirmed = false or confirmed is null';
 
-  pool.query(querystring, (error, results) => {
+  pool.query(querystring, (error , results) => {
     if (error) {
       response.status(500).send(error)
     }
-    response.status(200).send(results.rows);
+    response.status(200).send(results ? results.rows : []);
   });
 }
 
 module.exports.createUser = (request, response) => {
   const { username, password, email, date, place, role_id, fullName, name, lastname, phone } = request.body
-
   pool.query('INSERT INTO users (username, password, email, date, place, role_id, fullName, name, lastname, phone) '
   + 'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [username, password, email, date, place, role_id, fullName, name, lastname, phone], (error, results) => {
     if (error) {
       response.status(500).send(error)
     }
-    response.status(200);
+    response.status(200).send();
   })
 }
 

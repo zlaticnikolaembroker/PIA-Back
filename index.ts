@@ -15,7 +15,7 @@ app.use(
 
 app.get('/users', users.getUsers)
 app.get('/users/:id', users.getUserById)
-app.get('/unconfirmed_users', users.getUnconfirmedUsers)
+app.get('/users_unconfirmed', users.getUnconfirmedUsers)
 app.post('/users', users.createUser)
 app.post('/users/get_user_by_username', users.getUserByUsername)
 app.put('/users/:id', users.updateUser)
