@@ -23,7 +23,7 @@ module.exports.getUserById = (request, response) => {
     if (error) {
       response.status(500).send(error);
     }
-    response.status(200).json(results.rows)
+    response.status(200).json(results.rows[0])
   })
 }
 
@@ -78,18 +78,18 @@ module.exports.createUser = (request, response) => {
   })
 }
 
-module.exports.updateUser = (request, response) => {
-  const id = parseInt(request.params.id)
-  const { name, email } = request.body
+module.exports.updateUsersPassword = (request, response) => {
+  const id = request.body.id;
+  const password = request.body.password;
 
   pool.query(
-    'UPDATE users SET name = $1, email = $2 WHERE id = $3',
-    [name, email, id],
+    'UPDATE users SET password = $1 WHERE id = $2',
+    [password, id],
     (error, results) => {
       if (error) {
         response.status(500).send({error: error});
       }
-      response.status(200).send(`User modified with ID: ${id}`)
+      response.status(200).send();
     }
   )
 }
