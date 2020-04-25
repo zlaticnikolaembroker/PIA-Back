@@ -12,7 +12,7 @@ module.exports.getUsers = (request, response) => {
     if (error) {
       response.status(500).send(error);
     }
-    response.status(200).json(results)
+    response.status(200).json(results.rows)
   })
 }
 
@@ -94,6 +94,24 @@ module.exports.updateUsersPassword = (request, response) => {
   )
 }
 
+module.exports.updateAdmin = (request, response) => {
+  const id = request.body.id;
+  const password = request.body.password;
+  const email = request.body.email;
+  const username = request.body.username;
+
+  pool.query(
+    'UPDATE users SET password = $1, email = $2 , username = $3 WHERE id = $4',
+    [password, email, username, id],
+    (error, results) => {
+      if (error) {
+        response.status(500).send({error: error});
+      }
+      response.status(200).send();
+    }
+  )
+}
+
 module.exports.deleteUser = (request, response) => {
   const id = parseInt(request.params.id)
 
@@ -101,6 +119,6 @@ module.exports.deleteUser = (request, response) => {
     if (error) {
       response.status(500).send(error);
     }
-    response.status(200).send(`User deleted with ID: ${id}`)
+    response.status(200).send();
   })
 }
