@@ -20,8 +20,6 @@ app.post('/users', users.createUser);
 app.post('/users/get_user_by_username', users.getUserByUsername);
 app.post('/users/confirm_user', users.updateUserConfirmation);
 app.post('/users/update_password', users.updateUsersPassword);
-app.post('/users/update_admin', users.updateAdmin);
-app.post('/users/update_farmer', users.updateFarmer);
 app.post('/users/update', users.updateUser);
 app.delete('/users/:id', users.deleteUser);
 

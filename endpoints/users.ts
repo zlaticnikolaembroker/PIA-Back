@@ -68,9 +68,20 @@ module.exports.updateUserConfirmation = (request, response) => {
 }
 
 module.exports.createUser = (request, response) => {
-  const { username, password, email, date, place, role_id, fullName, name, lastname, phone } = request.body
-  pool.query('INSERT INTO users (username, password, email, date, place, role_id, fullName, name, lastname, phone) '
-  + 'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [username, password, email, date, place, role_id, fullName, name, lastname, phone], (error, results) => {
+  const userFields = Object.getOwnPropertyNames(request.body);
+  let query = 'INSERT INTO users(';
+  userFields.forEach((field) => {
+    query += field + ',';
+  });
+  query = query = query.substr(0, query.length - 1);
+  query += ') '
+  query += 'VALUES (';
+  userFields.forEach((field) => {
+    query += '\'' +request.body[field] + '\',';
+  })
+  query = query = query.substr(0, query.length - 1);
+  query += ') ';
+  pool.query(query, (error, results) => {
     if (error) {
       response.status(500).send(error)
     }
