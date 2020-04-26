@@ -112,6 +112,27 @@ module.exports.updateAdmin = (request, response) => {
   )
 }
 
+module.exports.updateFarmer = (request, response) => {
+  const id = request.body.id;
+  const userFields = Object.getOwnPropertyNames(request.body);
+  let query = 'UPDATE users SET ';
+  userFields.forEach((field, index) => {
+    if(field !== 'id') {
+      query+= (field + ' = \'' + request.body[field] + '\',');
+    }
+  });
+  query = query.substr(0, query.length - 1);
+  query += ' where id = ' + id;
+  pool.query(query,
+    (error, results) => {
+      if (error) {
+        response.status(500).send({error: error});
+      }
+      response.status(200).send();
+    }
+  )
+}
+
 module.exports.deleteUser = (request, response) => {
   const id = parseInt(request.params.id)
 
