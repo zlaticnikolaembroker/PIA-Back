@@ -1,0 +1,2 @@
+insert into orders(company_id, farmer_id, date_of_order, status)
+values(41, 35, current_date, 'Received'), (41, 35, current_date, 'Received'), (41, 35, current_date, 'Received'), (41, 35, current_date, 'Received')
