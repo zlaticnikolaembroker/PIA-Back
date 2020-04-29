@@ -30,3 +30,17 @@ module.exports.orderSetStatus = (request, response) => {
     response.status(200).json(results !== undefined ? results.rows : []);
   })
 }
+
+module.exports.getProductDetials = (request, response) => {
+  const id = parseInt(request.params.id)
+  db.getPool().query('SELECT p.* , avg(rating), string_agg(comment, ', ') AS comments ' +
+  'FROM comments com ' + 
+  'join products p on p.id = com.product_id ' +
+  'where product_id = $1 ' +
+  'group by p.id;', [id], (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    response.status(200).json(results !== undefined ? results.rows[0] : null);
+  })
+}
