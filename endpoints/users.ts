@@ -1,14 +1,7 @@
-const Pool = require('pg').Pool
-const pool = new Pool({
-  user: 'zlatic',
-  host: 'localhost',
-  database: 'PIA',
-  password: 'Lozinka.123',
-  port: 5432,
-})
+const db = require('./../database/pool.ts');
 
 module.exports.getUsers = (request, response) => {
-  pool.query('SELECT * FROM users ORDER BY id ASC', (error, results) => {
+  db.getPool().query('SELECT * FROM users ORDER BY id ASC', (error, results) => {
     if (error) {
       response.status(500).send(error);
     }
@@ -19,7 +12,7 @@ module.exports.getUsers = (request, response) => {
 module.exports.getUserById = (request, response) => {
   const id = parseInt(request.params.id)
 
-  pool.query('SELECT * FROM users WHERE id = $1', [id], (error, results) => {
+  db.getPool().query('SELECT * FROM users WHERE id = $1', [id], (error, results) => {
     if (error) {
       response.status(500).send(error);
     }
@@ -32,7 +25,7 @@ module.exports.getUserByUsername = (request, response) => {
 
   const querystring = 'SELECT * FROM users WHERE username = \'' + username + '\' and confirmed = true';
 
-  pool.query(querystring, (error, results) => {
+  db.getPool().query(querystring, (error, results) => {
     if (error) {
       response.status(500).send(error)
     }
@@ -44,7 +37,7 @@ module.exports.getUnconfirmedUsers = (request, response) => {
 
   const querystring = 'SELECT * FROM users WHERE confirmed is null';
 
-  pool.query(querystring, (error , results) => {
+  db.getPool().query(querystring, (error , results) => {
     if (error) {
       response.status(500).send(error)
     }
@@ -59,7 +52,7 @@ module.exports.updateUserConfirmation = (request, response) => {
 
   const querystring = 'UPDATE users set confirmed = \'' + confirmation + '\' where id = ' + userId;
 
-  pool.query(querystring, (error , results) => {
+  db.getPool().query(querystring, (error , results) => {
     if (error) {
       response.status(500).send(error)
     }
@@ -81,7 +74,7 @@ module.exports.createUser = (request, response) => {
   })
   query = query = query.substr(0, query.length - 1);
   query += ') ';
-  pool.query(query, (error, results) => {
+  db.getPool().query(query, (error, results) => {
     if (error) {
       response.status(500).send(error)
     }
@@ -93,7 +86,7 @@ module.exports.updateUsersPassword = (request, response) => {
   const id = request.body.id;
   const password = request.body.password;
 
-  pool.query(
+  db.getPool().query(
     'UPDATE users SET password = $1 WHERE id = $2',
     [password, id],
     (error, results) => {
@@ -116,7 +109,7 @@ module.exports.updateUser = (request, response) => {
   });
   query = query.substr(0, query.length - 1);
   query += ' where id = ' + id;
-  pool.query(query,
+  db.getPool().query(query,
     (error, results) => {
       if (error) {
         response.status(500).send({error: error});
@@ -129,7 +122,7 @@ module.exports.updateUser = (request, response) => {
 module.exports.deleteUser = (request, response) => {
   const id = parseInt(request.params.id)
 
-  pool.query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
+  db.getPool().query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
     if (error) {
       response.status(500).send(error);
     }
