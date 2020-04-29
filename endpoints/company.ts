@@ -12,7 +12,7 @@ module.exports.getCompanyProducts = (request, response) => {
 
 module.exports.getCompanyOrders = (request, response) => {
   const id = parseInt(request.params.id)
-  db.getPool().query('select orders.*, (user.name + user.lastname) as farmerName from orders join user on user.id = orders.farmer_id where company_id = $1;', [id], (error, results) => {
+  db.getPool().query('select orders.*, users.name || users.lastname as farmerName from orders join users on users.id = orders.farmer_id where company_id = $1;', [id], (error, results) => {
     if (error) {
       response.status(500).send(error);
     }
