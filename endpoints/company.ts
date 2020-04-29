@@ -33,7 +33,7 @@ module.exports.orderSetStatus = (request, response) => {
 
 module.exports.getProductDetials = (request, response) => {
   const id = parseInt(request.params.id)
-  db.getPool().query('SELECT p.* , avg(rating), string_agg(comment, ', ') AS comments ' +
+  db.getPool().query('SELECT p.* , avg(rating), string_agg(comment, \', \') AS comments ' +
   'FROM comments com ' + 
   'join products p on p.id = com.product_id ' +
   'where product_id = $1 ' +
