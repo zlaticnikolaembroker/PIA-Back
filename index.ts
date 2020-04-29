@@ -26,6 +26,7 @@ app.post('/users/update', users.updateUser);
 app.delete('/users/:id', users.deleteUser);
 
 app.get('/company/products/:id', company.getCompanyProducts);
+app.get('/company/orders/:id', company.getCompanyOrders);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
