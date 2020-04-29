@@ -19,3 +19,14 @@ module.exports.getCompanyOrders = (request, response) => {
     response.status(200).json(results !== undefined ? results.rows : []);
   })
 }
+
+module.exports.orderSetStatus = (request, response) => {
+  const id = request.body.id;
+  const newStatus = request.body.acceptOrder === true ? 'On Wait' : 'Rejected';
+  db.getPool().query('update orders set status = $1 where id = $2;', [newStatus, id], (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    response.status(200).json(results !== undefined ? results.rows : []);
+  })
+}

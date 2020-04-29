@@ -27,6 +27,7 @@ app.delete('/users/:id', users.deleteUser);
 
 app.get('/company/products/:id', company.getCompanyProducts);
 app.get('/company/orders/:id', company.getCompanyOrders);
+app.post('/company/order_set_status', company.orderSetStatus);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
