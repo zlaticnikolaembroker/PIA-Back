@@ -34,9 +34,9 @@ module.exports.orderSetStatus = (request, response) => {
 module.exports.getProductDetials = (request, response) => {
   const id = parseInt(request.params.id)
   db.getPool().query('SELECT p.* , avg(rating), string_agg(comment, \', \') AS comments ' +
-  'FROM comments com ' + 
-  'join products p on p.id = com.product_id ' +
-  'where product_id = $1 ' +
+  'FROM products p ' + 
+  'left join comments com on p.id = com.product_id ' +
+  'where p.id = $1 ' +
   'group by p.id;', [id], (error, results) => {
     if (error) {
       response.status(500).send(error);
