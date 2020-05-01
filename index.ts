@@ -30,6 +30,7 @@ app.get('/company/orders/:id', company.getCompanyOrders);
 app.post('/company/order_set_status', company.orderSetStatus);
 app.get('/company/get_product_details/:id', company.getProductDetials);
 app.post('/company/update_product', company.updateProduct);
+app.post('/company/product', company.addProduct);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

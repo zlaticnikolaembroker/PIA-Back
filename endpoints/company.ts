@@ -57,3 +57,16 @@ module.exports.updateProduct = (request, response) => {
     response.status(200).send();
   })
 }
+
+module.exports.addProduct = (request, response) => {
+  const company_id = request.body.company_id;
+  const name = request.body.name;
+  const available = request.body.available;
+  const price = request.body.price;
+  db.getPool().query('insert into products(name, price, available, company_id) values( \'' + name + '\' , \'' + price + '\' , \'' + available + '\', \'' + company_id + '\');', (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    response.status(200).send();
+  })
+}
