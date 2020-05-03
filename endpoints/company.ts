@@ -71,3 +71,61 @@ module.exports.addProduct = (request, response) => {
     response.status(200).send();
   })
 }
+
+module.exports.getOrderDetials = (request, response) => {
+  const id = parseInt(request.params.id);
+  let finalResponse;
+  let orderInfo;
+  let farmerInfo;
+  let products = [];
+  db.getPool().query('select date_of_order, status, orders.date_of_completion ' +
+  'from orders where id = $1;', [id], (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    orderInfo = {
+      dateOfCompletion: results.rows[0].date_of_completion,
+      dateOfOrder: results.rows[0].date_of_order,
+      status: results.rows[0].status,
+      totalPrice: 0,
+    };
+    db.getPool().query('select name, lastname, place ' +
+    'from users ' +
+    'join orders on orders.farmer_id = users.id ' +
+    'where orders.id = $1;', [id], (error, results) => {
+      if (error) {
+        response.status(500).send(error);
+      }
+      farmerInfo = {
+        lastname: results.rows[0].lastname,
+        name: results.rows[0].name,
+        place: results.rows[0].place,
+      };
+      db.getPool().query('select op.amount, op.price, p.name, op.amount * op.price as totalPrice '+
+      'from order_product op ' +
+      'join products p on p.id = op.product_id ' +
+      'where order_id = $1;', [id], (error, results) => {
+        if (error) {
+          response.status(500).send(error);
+        }
+        results.rows.forEach(element => {
+          products.push({
+            amount: element.amount,
+            name: element.name,
+            price: element.price,
+            totalPrice: element.totalprice,
+          })
+        });
+        products.forEach((product) => {
+          orderInfo.totalPrice += +product.totalPrice;
+        })
+        finalResponse = { 
+          farmerInfo,
+          orderInfo,
+          products,
+        };
+        response.status(200).json(finalResponse).send();
+      });
+    });
+  });
+}
