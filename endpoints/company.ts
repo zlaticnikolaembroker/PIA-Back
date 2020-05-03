@@ -50,7 +50,8 @@ module.exports.updateProduct = (request, response) => {
   const name = request.body.name;
   const available = request.body.available;
   const price = request.body.price;
-  db.getPool().query('update products set name = \'' + name +'\', available = \'' + available+  '\', price = \'' + price +'\' where id = ' + id + ';', (error, results) => {
+  const archived = request.body.archived;
+  db.getPool().query('update products set name = \'' + name +'\', available = \'' + available+  '\', price = \'' + price +'\' , archived = ' + archived +' where id = ' + id + ';', (error, results) => {
     if (error) {
       response.status(500).send(error);
     }

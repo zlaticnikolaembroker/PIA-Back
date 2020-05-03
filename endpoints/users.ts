@@ -70,7 +70,11 @@ module.exports.createUser = (request, response) => {
   query += ') '
   query += 'VALUES (';
   userFields.forEach((field) => {
-    query += '\'' +request.body[field] + '\',';
+    if(request.body[field] !== null) {
+      query += '\'' +request.body[field] + '\',';
+    } else {
+      query += request.body[field] + ',';
+    }
   })
   query = query = query.substr(0, query.length - 1);
   query += ') ';
