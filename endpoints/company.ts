@@ -144,3 +144,15 @@ module.exports.getCompanyReport = (request, response) => {
     response.status(200).send(results.rows);
   })
 }
+module.exports.getCompanyOrders = (request, response) => {
+  const company_id = parseInt(request.params.id)
+  db.getPool().query('select id ' +
+  'from orders ' +
+  'where company_id = ' + company_id +
+  'and date_of_order > current_date - interval \'30\' day;', (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    response.status(200).send(results.rows);
+  })
+}
