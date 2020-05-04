@@ -129,3 +129,18 @@ module.exports.getOrderDetials = (request, response) => {
     });
   });
 }
+
+module.exports.getCompanyReport = (request, response) => {
+  const company_id = parseInt(request.params.id)
+  db.getPool().query('select date_of_order, count(*) ' +
+  'from orders ' +
+  'where company_id = ' + company_id +
+  'and date_of_order > current_date - interval \'30\' day ' +
+  'group by 1 ' +
+  'order by 1;', (error, results) => {
+    if (error) {
+      response.status(500).send(error);
+    }
+    response.status(200).send(results.rows);
+  })
+}
