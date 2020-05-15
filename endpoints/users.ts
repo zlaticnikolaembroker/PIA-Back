@@ -3,9 +3,9 @@ const db = require('./../database/pool.ts');
 module.exports.getUsers = (request, response) => {
   db.getPool().query('SELECT * FROM users ORDER BY id ASC', (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results.rows)
+    return response.status(200).json(results.rows)
   })
 }
 
@@ -14,9 +14,9 @@ module.exports.getUserById = (request, response) => {
 
   db.getPool().query('SELECT * FROM users WHERE id = $1', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results.rows[0])
+    return response.status(200).json(results.rows[0])
   })
 }
 
@@ -27,9 +27,9 @@ module.exports.getUserByUsername = (request, response) => {
 
   db.getPool().query(querystring, (error, results) => {
     if (error) {
-      response.status(500).send(error)
+      return response.status(500).json(error)
     }
-    response.status(200).send(results.rows[0]);
+    return response.status(200).json(results.rows[0]);
   });
 }
 
@@ -39,9 +39,9 @@ module.exports.getUnconfirmedUsers = (request, response) => {
 
   db.getPool().query(querystring, (error , results) => {
     if (error) {
-      response.status(500).send(error)
+      return response.status(500).json(error)
     }
-    response.status(200).send(results ? results.rows : []);
+    return response.status(200).json(results ? results.rows : []);
   });
 }
 
@@ -54,9 +54,9 @@ module.exports.updateUserConfirmation = (request, response) => {
 
   db.getPool().query(querystring, (error , results) => {
     if (error) {
-      response.status(500).send(error)
+      return response.status(500).json(error)
     }
-    response.status(200).send();
+    return response.status(200).json();
   });
 }
 
@@ -80,9 +80,9 @@ module.exports.createUser = (request, response) => {
   query += ') ';
   db.getPool().query(query, (error, results) => {
     if (error) {
-      response.status(500).send(error)
+      return response.status(500).json(error)
     }
-    response.status(200).send();
+    return response.status(200).json();
   })
 }
 
@@ -95,9 +95,9 @@ module.exports.updateUsersPassword = (request, response) => {
     [password, id],
     (error, results) => {
       if (error) {
-        response.status(500).send({error: error});
+        return response.status(500).json({error: error});
       }
-      response.status(200).send();
+      return response.status(200).json();
     }
   )
 }
@@ -116,9 +116,9 @@ module.exports.updateUser = (request, response) => {
   db.getPool().query(query,
     (error, results) => {
       if (error) {
-        response.status(500).send({error: error});
+        return response.status(500).json({error: error});
       }
-      response.status(200).send();
+      return response.status(200).json();
     }
   )
 }
@@ -128,8 +128,8 @@ module.exports.deleteUser = (request, response) => {
 
   db.getPool().query('DELETE FROM users WHERE id = $1', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).send();
+    return response.status(200).json();
   })
 }

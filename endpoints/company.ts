@@ -4,9 +4,9 @@ module.exports.getCompanyProducts = (request, response) => {
   const id = parseInt(request.params.id)
   db.getPool().query('select * from products where company_id = $1;', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results.rows)
+    return response.status(200).json(results.rows)
   })
 }
 
@@ -14,10 +14,10 @@ module.exports.getCompanyOrders = (request, response) => {
   const id = parseInt(request.params.id)
   db.getPool().query('select orders.*, users.name || users.lastname as farmerName from orders join users on users.id = orders.farmer_id where company_id = $1;', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results !== undefined ? results.rows : []);
-  })
+    return response.status(200).json(results !== undefined ? results.rows : []);
+  });
 }
 
 module.exports.orderSetStatus = (request, response) => {
@@ -25,10 +25,10 @@ module.exports.orderSetStatus = (request, response) => {
   const newStatus = request.body.acceptOrder === true ? 'On Wait' : 'Rejected';
   db.getPool().query('update orders set status = $1 where id = $2;', [newStatus, id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results !== undefined ? results.rows : []);
-  })
+    return response.status(200).json(results !== undefined ? results.rows : []);
+  });
 }
 
 module.exports.getProductDetials = (request, response) => {
@@ -39,10 +39,10 @@ module.exports.getProductDetials = (request, response) => {
   'where p.id = $1 ' +
   'group by p.id;', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).json(results !== undefined ? results.rows[0] : null);
-  })
+    return response.status(200).json(results !== undefined ? results.rows[0] : null);
+  });
 }
 
 module.exports.updateProduct = (request, response) => {
@@ -53,10 +53,10 @@ module.exports.updateProduct = (request, response) => {
   const archived = request.body.archived;
   db.getPool().query('update products set name = \'' + name +'\', available = \'' + available+  '\', price = \'' + price +'\' , archived = ' + archived +' where id = ' + id + ';', (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).send();
-  })
+    return response.status(200).json();
+  });
 }
 
 module.exports.addProduct = (request, response) => {
@@ -66,10 +66,10 @@ module.exports.addProduct = (request, response) => {
   const price = request.body.price;
   db.getPool().query('insert into products(name, price, available, company_id) values( \'' + name + '\' , \'' + price + '\' , \'' + available + '\', \'' + company_id + '\');', (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).send();
-  })
+    return response.status(200).json();
+  });
 }
 
 module.exports.getOrderDetials = (request, response) => {
@@ -81,7 +81,7 @@ module.exports.getOrderDetials = (request, response) => {
   db.getPool().query('select date_of_order, status, orders.date_of_completion ' +
   'from orders where id = $1;', [id], (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
     orderInfo = {
       dateOfCompletion: results.rows[0].date_of_completion,
@@ -94,7 +94,7 @@ module.exports.getOrderDetials = (request, response) => {
     'join orders on orders.farmer_id = users.id ' +
     'where orders.id = $1;', [id], (error, results) => {
       if (error) {
-        response.status(500).send(error);
+        return response.status(500).json(error);
       }
       farmerInfo = {
         lastname: results.rows[0].lastname,
@@ -106,7 +106,7 @@ module.exports.getOrderDetials = (request, response) => {
       'join products p on p.id = op.product_id ' +
       'where order_id = $1;', [id], (error, results) => {
         if (error) {
-          response.status(500).send(error);
+          return response.status(500).json(error);
         }
         results.rows.forEach(element => {
           products.push({
@@ -114,7 +114,7 @@ module.exports.getOrderDetials = (request, response) => {
             name: element.name,
             price: element.price,
             totalPrice: element.totalprice,
-          })
+          });
         });
         products.forEach((product) => {
           orderInfo.totalPrice += +product.totalPrice;
@@ -124,7 +124,7 @@ module.exports.getOrderDetials = (request, response) => {
           orderInfo,
           products,
         };
-        response.status(200).json(finalResponse).send();
+        return response.status(200).json(finalResponse);
       });
     });
   });
@@ -139,10 +139,10 @@ module.exports.getCompanyReport = (request, response) => {
   'group by 1 ' +
   'order by 1;', (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).send(results.rows);
-  })
+    return response.status(200).json(results.rows);
+  });
 }
 module.exports.getCompanyOrders = (request, response) => {
   const company_id = parseInt(request.params.id)
@@ -151,8 +151,8 @@ module.exports.getCompanyOrders = (request, response) => {
   'where company_id = ' + company_id +
   'and date_of_order > current_date - interval \'30\' day;', (error, results) => {
     if (error) {
-      response.status(500).send(error);
+      return response.status(500).json(error);
     }
-    response.status(200).send(results.rows);
-  })
+    return response.status(200).json(results.rows);
+  });
 }
