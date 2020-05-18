@@ -146,8 +146,9 @@ module.exports.getCompanyReport = (request, response) => {
 }
 module.exports.getCompanyOrders = (request, response) => {
   const company_id = parseInt(request.params.id)
-  db.getPool().query('select id ' +
-  'from orders ' +
+  db.getPool().query('select o.id, date_of_order, status, date_of_completion, u.name ' +
+  'from orders o ' +
+  'join users u on u.id = o.farmer_id ' +
   'where company_id = ' + company_id +
   'and date_of_order > current_date - interval \'30\' day;', (error, results) => {
     if (error) {
