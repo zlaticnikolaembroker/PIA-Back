@@ -144,6 +144,7 @@ module.exports.getCompanyReport = (request, response) => {
     return response.status(200).json(results.rows);
   });
 }
+
 module.exports.getCompanyOrders = (request, response) => {
   const company_id = parseInt(request.params.id)
   db.getPool().query('select o.id, date_of_order, status, date_of_completion, u.name ' +
@@ -155,5 +156,16 @@ module.exports.getCompanyOrders = (request, response) => {
       return response.status(500).json(error);
     }
     return response.status(200).json(results.rows);
+  });
+}
+
+module.exports.updateOrderStatus = (request, response) => {
+  const order_id = request.body.id;
+  const newStatus = request.body.status;
+  db.getPool().query('update orders set status = \'' + newStatus + '\' where id = ' + order_id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json();
   });
 }
