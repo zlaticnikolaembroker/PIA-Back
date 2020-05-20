@@ -27,7 +27,29 @@ module.exports.orderSetStatus = (request, response) => {
     if (error) {
       return response.status(500).json(error);
     }
-    return response.status(200).json(results !== undefined ? results.rows : []);
+    if (newStatus === 'On Wait') {
+      db.getPool().query('select company_id from orders where id = ' + id, (error, results) => {
+        if (error) {
+          return response.status(200).json(false);
+        }
+        const company_id = results.rows[0].company_id
+        db.getPool().query('select id from courier where company_id = ' + company_id + ' and order_id is null limit 1', (error, results) => {
+          if (error || results.rows.length == 0) {
+            return response.status(200).json(false);
+          }
+          const courier_id = results.rows[0].id;
+          db.getPool().query('update courier set order_id = ' + id + ' where id = ' + courier_id, (error, results) => {
+            if (error) {
+              return response.status(200).json(false);
+            }
+            return response.status(200).json(true);
+          });
+        });
+      });
+    }
+    if (newStatus !== 'On Wait') {
+      return response.status(200).json(false);
+    }
   });
 }
 
@@ -162,10 +184,32 @@ module.exports.getCompanyOrders = (request, response) => {
 module.exports.updateOrderStatus = (request, response) => {
   const order_id = request.body.id;
   const newStatus = request.body.status;
-  db.getPool().query('update orders set status = \'' + newStatus + '\' where id = ' + order_id, (error, results) => {
+  db.getPool().query('update orders set status = \'' + newStatus + '\' where id = ' + order_id, async (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
-    return response.status(200).json();
+    if (newStatus === 'On Wait') {
+      db.getPool().query('select company_id from orders where id = ' + order_id, (error, results) => {
+        if (error) {
+          return response.status(200).json(false);
+        }
+        const company_id = results.rows[0].company_id
+        db.getPool().query('select id from courier where company_id = ' + company_id + ' and order_id is null limit 1', (error, results) => {
+          if (error || results.rows.length == 0) {
+            return response.status(200).json(false);
+          }
+          const courier_id = results.rows[0].id;
+          db.getPool().query('update courier set order_id = ' + order_id + ' where id = ' + courier_id, (error, results) => {
+            if (error) {
+              return response.status(200).json(false);
+            }
+            return response.status(200).json(true);
+          });
+        });
+      });
+    }
+    if (newStatus !== 'On Wait') {
+      return response.status(200).json(false);
+    }
   });
 }
