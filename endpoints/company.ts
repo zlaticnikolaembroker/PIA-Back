@@ -213,9 +213,47 @@ module.exports.updateOrderStatus = (request, response) => {
           });
         });
       });
-    }
-    if (newStatus !== 'In Progress') {
-      return response.status(200).json(false);
+    } else {
+      if (newStatus === 'Done') {
+        db.getPool().query('select company_id ' +
+        'from orders o ' +
+        'where o.id = ' + order_id , (error, results) => {
+          if (error || results.rows.length == 0) {
+            return response.status(200).json(false);
+          }
+          const company_id = results.rows[0].company_id;
+
+          db.getPool().query('select id ' +
+          'from courier c ' +
+          'where c.order_id = ' + order_id , (error, results) => {
+            if (error || results.rows.length == 0) {
+              return response.status(200).json(false);
+            }
+            const courier_od = results.rows[0].id;
+            db.getPool().query('select id ' +
+            'from orders o ' +
+            'where status = \'On Wait\' and company_id = ' + company_id , (error, results) => {
+              if (error) {
+                return response.status(200).json(false);
+              }
+              const new_order_id = results.rows.length == 0 ? null : results.rows[0].id;
+              db.getPool().query('update courier set order_id = ' + new_order_id + ' where id = ' + courier_od, (error, results) => {
+                if (error) {
+                  return response.status(500).json(error);
+                }
+                db.getPool().query('update orders set status = \'In Progress\' where id = ' + new_order_id, (error, results) => {
+                  if (error) {
+                    return response.status(500).json(error);
+                  }
+                  return response.status(200).json(true);
+                });
+              });
+            });
+          });
+        });
+      } else {
+        return response.status(200).json(false);
+      }
     }
   });
 }
