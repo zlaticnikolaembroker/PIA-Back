@@ -190,11 +190,12 @@ module.exports.getCompanyOrders = (request, response) => {
 module.exports.updateOrderStatus = (request, response) => {
   const order_id = request.body.id;
   const newStatus = request.body.status;
-  db.getPool().query('update orders set status = \'' + newStatus + '\' where id = ' + order_id, async (error, results) => {
+  let updateOrderStatusQuery = newStatus === "Done" ? 'update orders set status = \'' + newStatus + '\', date_of_completion = current_date where id = ' + order_id : 'update orders set status = \'' + newStatus + '\' where id = ' + order_id;
+  db.getPool().query(updateOrderStatusQuery, (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
-    if (newStatus === 'In Progress') {
+    if (newStatus === 'On Wait' || newStatus === "In Progress") {
       db.getPool().query('select company_id from orders where id = ' + order_id, (error, results) => {
         if (error) {
           return response.status(200).json(false);
@@ -209,12 +210,21 @@ module.exports.updateOrderStatus = (request, response) => {
             if (error) {
               return response.status(200).json(false);
             }
-            return response.status(200).json(true);
+            if (newStatus === "On Wait") {
+              db.getPool().query('update orders set status = \'In Progress\' where id = ' + order_id, (error, results) => {
+                if (error) {
+                  return response.status(500).json(error);
+                }
+                return response.status(200).json(order_id);
+              });
+            } else {
+              return response.status(200).json(true);
+            }
           });
         });
       });
     } else {
-      if (newStatus === 'Done') {
+      if (newStatus === 'Done' || newStatus === 'Rejected') {
         db.getPool().query('select company_id ' +
         'from orders o ' +
         'where o.id = ' + order_id , (error, results) => {
@@ -241,11 +251,14 @@ module.exports.updateOrderStatus = (request, response) => {
                 if (error) {
                   return response.status(500).json(error);
                 }
+                if (new_order_id === null) {
+                  return response.status(200).json(true);
+                }
                 db.getPool().query('update orders set status = \'In Progress\' where id = ' + new_order_id, (error, results) => {
                   if (error) {
                     return response.status(500).json(error);
                   }
-                  return response.status(200).json(true);
+                  return response.status(200).json(new_order_id);
                 });
               });
             });
