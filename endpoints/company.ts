@@ -22,7 +22,7 @@ module.exports.getCompanyOrders = (request, response) => {
 
 module.exports.orderSetStatus = (request, response) => {
   const id = request.body.id;
-  const newStatus = request.body.acceptOrder === true ? 'On Wait' : 'Rejected';
+  let newStatus = request.body.acceptOrder === true ? 'On Wait' : 'Rejected';
   db.getPool().query('update orders set status = $1 where id = $2;', [newStatus, id], (error, results) => {
     if (error) {
       return response.status(500).json(error);
@@ -42,7 +42,13 @@ module.exports.orderSetStatus = (request, response) => {
             if (error) {
               return response.status(200).json(false);
             }
-            return response.status(200).json(true);
+            newStatus = "In Progress";
+            db.getPool().query('update orders set status = $1 where id = $2;', [newStatus, id], (error, results) => {
+              if (error) {
+                return response.status(500).json(error);
+              }
+              return response.status(200).json(true);
+            });
           });
         });
       });
@@ -188,7 +194,7 @@ module.exports.updateOrderStatus = (request, response) => {
     if (error) {
       return response.status(500).json(error);
     }
-    if (newStatus === 'On Wait') {
+    if (newStatus === 'In Progress') {
       db.getPool().query('select company_id from orders where id = ' + order_id, (error, results) => {
         if (error) {
           return response.status(200).json(false);
@@ -208,7 +214,7 @@ module.exports.updateOrderStatus = (request, response) => {
         });
       });
     }
-    if (newStatus !== 'On Wait') {
+    if (newStatus !== 'In Progress') {
       return response.status(200).json(false);
     }
   });
