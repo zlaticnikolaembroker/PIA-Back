@@ -1,0 +1,2 @@
+insert into nursery_garden(name, place, height, width, water, temperature, id_farmer)
+values ('test', 'test' , 10, 10, 180, 22, 40), ('test 2', 'test' , 10, 10, 180, 22, 40) ,('test 3', 'test' , 10, 10, 180, 22, 40);
