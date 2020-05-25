@@ -4,6 +4,7 @@ const app = express()
 const cors = require('cors');
 const users = require('./endpoints/users.ts');
 const company = require('./endpoints/company.ts');
+const farmer = require('./endpoints/farmer.ts');
 const port = 3000
 
 app.use(cors());
@@ -14,7 +15,7 @@ app.use(
   })
 )
 
-
+//**************USERS*************/
 app.get('/users', users.getUsers);
 app.get('/users/:id', users.getUserById);
 app.get('/users_unconfirmed', users.getUnconfirmedUsers);
@@ -25,6 +26,7 @@ app.post('/users/update_password', users.updateUsersPassword);
 app.post('/users/update', users.updateUser);
 app.delete('/users/:id', users.deleteUser);
 
+//**************COMPANY*************/
 app.get('/company/products/:id', company.getCompanyProducts);
 app.get('/company/orders/:id', company.getCompanyOrders);
 app.post('/company/order_set_status', company.orderSetStatus);
@@ -35,6 +37,9 @@ app.get('/company/orders/:id', company.getCompanyOrders);
 app.post('/company/update_product', company.updateProduct);
 app.post('/company/product', company.addProduct);
 app.post('/company/orders/status', company.updateOrderStatus);
+
+//**************FARMER*************/
+app.get('/farmer/gardens/:id', farmer.getFarmerGardens);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
