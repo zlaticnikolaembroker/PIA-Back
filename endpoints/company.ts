@@ -79,7 +79,12 @@ module.exports.updateProduct = (request, response) => {
   const available = request.body.available;
   const price = request.body.price;
   const archived = request.body.archived;
-  db.getPool().query('update products set name = \'' + name +'\', available = \'' + available+  '\', price = \'' + price +'\' , archived = ' + archived +' where id = ' + id + ';', (error, results) => {
+  const type = request.body.type;
+  const time_to_grow = request.body.time_to_grow ? request.body.time_to_grow : null;
+  const acceleration_time = request.body.acceleration_time ? request.body.acceleration_time : null;
+  db.getPool().query('update products set name = \'' + name +'\', available = \'' + available +  '\', price = \'' + price + 
+                     '\' , archived = ' + archived + ', type = \'' + type + '\' ,time_to_grow =' + time_to_grow + ', acceleration_time = ' + acceleration_time +  
+                      ' where id = ' + id + ';', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
@@ -92,7 +97,11 @@ module.exports.addProduct = (request, response) => {
   const name = request.body.name;
   const available = request.body.available;
   const price = request.body.price;
-  db.getPool().query('insert into products(name, price, available, company_id) values( \'' + name + '\' , \'' + price + '\' , \'' + available + '\', \'' + company_id + '\');', (error, results) => {
+  const type = request.body.archived;
+  const time_to_grow = request.body.time_to_grow;
+  const acceleration_time = request.body.acceleration_time;
+  db.getPool().query('insert into products(name, price, available, company_id, type, time_to_grow, acceleration_time) values( \'' + 
+                      name + '\' , \'' + price + '\' , \'' + available + ', ' + company_id + '\''  + type +  '\',' + time_to_grow + ',' + acceleration_time + ');', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
