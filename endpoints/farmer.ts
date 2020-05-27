@@ -4,7 +4,7 @@ module.exports.getFarmerGardens = (request, response) => {
   const id = parseInt(request.params.id)
   
   db.getPool().query('select ng.id, ng.name, ng.place, ng.water, ' +
-  'ng.temperature, seedlings.occupied_slots, ' +
+  'ng.temperature, CASE WHEN seedlings.occupied_slots is null THEN 0 ELSE seedlings.occupied_slots END as occupied_slots, ' +
   '(ng.height * ng.width - CASE WHEN seedlings.occupied_slots is null THEN 0 ELSE seedlings.occupied_slots END) as free_slots ' +
   'from nursery_garden ng ' +
   'join users u on u.id = ng.id_farmer ' +
@@ -24,7 +24,7 @@ module.exports.getFarmerGarden = (request, response) => {
   const id = parseInt(request.params.id)
   
   db.getPool().query('select ng.id, ng.name, ng.place, ng.water, ' +
-  'ng.temperature, seedlings.occupied_slots, ' +
+  'ng.temperature, CASE WHEN seedlings.occupied_slots is null THEN 0 ELSE seedlings.occupied_slots END as occupied_slots, ' +
   '(ng.height * ng.width - CASE WHEN seedlings.occupied_slots is null THEN 0 ELSE seedlings.occupied_slots END) as free_slots , ' +
   'ng.height , ng.width ' +
   'from nursery_garden ng ' +
