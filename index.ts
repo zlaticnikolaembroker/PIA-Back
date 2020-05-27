@@ -40,6 +40,7 @@ app.post('/company/orders/status', company.updateOrderStatus);
 
 //**************FARMER*************/
 app.get('/farmer/gardens/:id', farmer.getFarmerGardens);
+app.get('/farmer/garden/:id', farmer.getFarmerGarden);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
