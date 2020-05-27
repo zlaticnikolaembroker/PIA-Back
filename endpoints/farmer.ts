@@ -67,3 +67,17 @@ module.exports.updateGardenTemperature = (request, response) => {
     return response.status(200).json(results.rows)
   })
 }
+
+module.exports.updateGardenWater = (request, response) => {
+  const id = request.body.id;
+  const twater_change = request.body.temp_change;
+  
+  db.getPool().query('update nursery_garden ' +
+  'set water = water + ' + twater_change + 
+  'where id = ' + id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows)
+  })
+}
