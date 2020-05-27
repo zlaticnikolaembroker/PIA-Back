@@ -53,3 +53,17 @@ module.exports.getFarmerGarden = (request, response) => {
 
   });
 }
+
+module.exports.updateGardenTemperature = (request, response) => {
+  const id = request.body.id;
+  const temp_change = request.body.temp_change;
+  
+  db.getPool().query('update nursery_garden ' +
+  'set temperature = temperature + ' + temp_change + 
+  'where id = ' + id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows)
+  })
+}
