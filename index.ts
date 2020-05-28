@@ -57,6 +57,7 @@ app.post('/farmer/garden/temperature_change', farmer.updateGardenTemperature);
 app.post('/farmer/garden/water_change', farmer.updateGardenWater);
 app.get('/farmer/online_shop', farmer.getProductsForOnlineShop);
 app.get('/farmer/online_shop/:id', farmer.getProductForOnlineShop);
+app.post('/farmer/create_order', farmer.createOrder);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)

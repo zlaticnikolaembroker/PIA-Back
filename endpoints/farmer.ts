@@ -84,12 +84,12 @@ module.exports.updateGardenWater = (request, response) => {
 
 module.exports.getProductsForOnlineShop = (request, response) => {
   db.getPool().query('select p.id, p.name, p.price, p.available, p.type, ' +
-  'p.time_to_grow, p.acceleration_time, u.fullname as producer, avg(rating) as average_rating ' +
+  'p.time_to_grow, p.acceleration_time, u.id as company_id, u.fullname as producer, avg(rating) as average_rating ' +
   'from products p ' +
   'join users u on u.id = p.company_id ' +
   'left join comments c on c.product_id = p.id ' +
   'where archived = false or archived is null ' +
-  'group by p.id, p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname;', (error, results) => {
+  'group by p.id, p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.id, u.fullname;', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
@@ -124,6 +124,39 @@ module.exports.getProductForOnlineShop = (request, response) => {
       result.comments = results.rows ? results.rows : [];
       return response.status(200).json(result)
     });
+  });
+}
+
+module.exports.createOrder = (request, response) => {
+  const farmer_id = this.request.body.farmer_id;
+  const company_id = this.request.body.company_id;
+  let products = this.request.products;
+  db.getPool().query('insert into orders(farmer_id, date_of_order, status, company_id) ' +
+  'values(' + farmer_id + ', current_date, \'Received\',' + company_id +');', async (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    products = products.map(element => {
+      return {
+        ...element,
+        finished: false,
+      }
+    })
+    products.forEach(element => {
+      db.getPool().query('insert into order_product(order_id, product_id, amount,price) ' +
+      'values ((select max(id) from orders), ' + element.product_id + ', ' + element.amount + ', ' + element.price + ');', (error, results) => {
+        if (error) {
+          return response.status(500).json(error);
+        }
+        element.finished = true;
+      }) 
+    });
+    while (products.filter(element => {
+      return element.finished === false;
+    }).lenght > 0) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    return response.status(200).json('');
   });
 }
 
