@@ -83,13 +83,13 @@ module.exports.updateGardenWater = (request, response) => {
 }
 
 module.exports.getProductsForOnlineShop = (request, response) => {
-  db.getPool().query('select p.name, p.price, p.available, p.type, ' +
+  db.getPool().query('select p.id, p.name, p.price, p.available, p.type, ' +
   'p.time_to_grow, p.acceleration_time, u.fullname as producer, avg(rating) as average_rating ' +
   'from products p ' +
   'join users u on u.id = p.company_id ' +
   'left join comments c on c.product_id = p.id ' +
   'where archived = false or archived is null ' +
-  'group by p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname;', (error, results) => {
+  'group by p.id, p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname;', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
@@ -99,15 +99,14 @@ module.exports.getProductsForOnlineShop = (request, response) => {
 
 module.exports.getProductForOnlineShop = (request, response) => {
   const id = parseInt(request.params.id)
-  db.getPool().query('select p.name, p.price, p.available, p.type, ' +
+  db.getPool().query('select p.id, p.name, p.price, p.available, p.type, ' +
   'p.time_to_grow, p.acceleration_time, u.fullname as producer, avg(rating) as average_rating ' +
   'from products p ' +
   'join users u on u.id = p.company_id ' +
   'left join comments c on c.product_id = p.id ' +
   'where (archived = false or archived is null) and p.id = ' + id + 
-  ' group by p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname ', (error, results) => {
+  ' group by p.id, p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname ', (error, results) => {
     if (error) {
-      console.log(error);
       return response.status(500).json(error);
     }
     const result = {
@@ -120,7 +119,6 @@ module.exports.getProductForOnlineShop = (request, response) => {
     'join users u on u.id = c.farmer_id ' +
     'where product_id = ' + id, (error, results) => {
       if (error) {
-        console.log(error);
         return response.status(500).json(error);
       }
       result.comments = results.rows ? results.rows : [];
