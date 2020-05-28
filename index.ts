@@ -7,6 +7,18 @@ const company = require('./endpoints/company.ts');
 const farmer = require('./endpoints/farmer.ts');
 const port = 3000
 
+//job to execute every 1 hour
+const schedule = require('node-schedule');
+ 
+schedule.scheduleJob('25 * * * *', () => {
+  console.log("***************");
+  console.log("Hourly job started at");
+  console.log(new Date());
+  farmer.updateGardenTemperatureAndWaterEveryHour();
+  console.log("Hourly job ended");
+  console.log("***************");
+});
+
 app.use(cors());
 app.use(bodyParser.json())
 app.use(

@@ -81,3 +81,8 @@ module.exports.updateGardenWater = (request, response) => {
     return response.status(200).json(results.rows)
   })
 }
+
+module.exports.updateGardenTemperatureAndWaterEveryHour = () => {
+  db.getPool().query('update nursery_garden ' +
+  'set water = water - 1, temperature = temperature - 0.5;', () => {})
+}
