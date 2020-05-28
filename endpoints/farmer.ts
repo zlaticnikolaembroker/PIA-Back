@@ -82,6 +82,21 @@ module.exports.updateGardenWater = (request, response) => {
   })
 }
 
+module.exports.getProductsForOnlineShop = (request, response) => {
+  db.getPool().query('select p.name, p.price, p.available, p.type, ' +
+  'p.time_to_grow, p.acceleration_time, u.fullname as producer, avg(rating) as average_rating ' +
+  'from products p ' +
+  'join users u on u.id = p.company_id ' +
+  'left join comments c on c.product_id = p.id ' +
+  'where archived = false or archived is null ' +
+  'group by p.name, p.price, p.available, p.type, p.time_to_grow, p.acceleration_time, u.fullname;', (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows)
+  })
+}
+
 module.exports.updateGardenTemperatureAndWaterEveryHour = () => {
   db.getPool().query('update nursery_garden ' +
   'set water = water - 1, temperature = temperature - 0.5;', () => {})
