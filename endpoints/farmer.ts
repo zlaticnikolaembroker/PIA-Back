@@ -130,9 +130,10 @@ module.exports.getProductForOnlineShop = (request, response) => {
 module.exports.createOrder = (request, response) => {
   const farmer_id = request.body.farmer_id;
   const company_id = request.body.company_id;
+  const garden_id = request.body.garden_id;
   let products = request.body.products;
   db.getPool().query('insert into orders(farmer_id, date_of_order, status, company_id) ' +
-  'values(' + farmer_id + ', current_date, \'Received\',' + company_id +');', async (error, results) => {
+  'values(' + farmer_id + ', current_date, \'Received\',' + company_id +');', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
@@ -141,22 +142,28 @@ module.exports.createOrder = (request, response) => {
         ...element,
         finished: false,
       }
-    })
-    products.forEach(element => {
-      db.getPool().query('insert into order_product(order_id, product_id, amount,price) ' +
-      'values ((select max(id) from orders), ' + element.product_id + ', ' + element.amount + ', ' + element.price + ');', (error, results) => {
+    });
+    db.getPool().query('insert into nursery_garden_order(id_order, id_nursery_garden) ' +
+      'values ((select max(id) from orders), ' + garden_id + ');', async (error, results) => {
         if (error) {
           return response.status(500).json(error);
         }
-        element.finished = true;
+        products.forEach(element => {
+          db.getPool().query('insert into order_product(order_id, product_id, amount,price) ' +
+          'values ((select max(id) from orders), ' + element.product_id + ', ' + element.amount + ', ' + element.price + ');', (error, results) => {
+            if (error) {
+              return response.status(500).json(error);
+            }
+            element.finished = true;
+          }) 
+        });
+        while (products.filter(element => {
+          return element.finished === false;
+        }).lenght > 0) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        return response.status(200).json('');
       }) 
-    });
-    while (products.filter(element => {
-      return element.finished === false;
-    }).lenght > 0) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-    }
-    return response.status(200).json('');
   });
 }
 
