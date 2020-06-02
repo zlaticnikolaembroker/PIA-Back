@@ -128,9 +128,9 @@ module.exports.getProductForOnlineShop = (request, response) => {
 }
 
 module.exports.createOrder = (request, response) => {
-  const farmer_id = this.request.body.farmer_id;
-  const company_id = this.request.body.company_id;
-  let products = this.request.products;
+  const farmer_id = request.body.farmer_id;
+  const company_id = request.body.company_id;
+  let products = request.body.products;
   db.getPool().query('insert into orders(farmer_id, date_of_order, status, company_id) ' +
   'values(' + farmer_id + ', current_date, \'Received\',' + company_id +');', async (error, results) => {
     if (error) {
