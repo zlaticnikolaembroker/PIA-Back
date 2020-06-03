@@ -168,11 +168,13 @@ module.exports.createOrder = (request, response) => {
 }
 
 module.exports.getOrders = (request, response) => {
-  const farmer_id = parseInt(request.params.farmer_id)
-  db.getPool().query('select * ' +
-  'from orders ' +
+  const garden_id = parseInt(request.params.garden_id)
+  db.getPool().query('select o.*, u.fullname ' +
+  'from orders o ' +
+  'join users u on u.id = o.company_id ' +
+  'join nursery_garden_order ngo on ngo.id_order = o.id ' +
   'where status not in (\'Done\', \'Rejected\') ' +
-  'and farmer_id = ' + farmer_id, (error, results) => {
+  'and id_nursery_garden = ' + garden_id, (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
