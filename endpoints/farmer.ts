@@ -167,6 +167,19 @@ module.exports.createOrder = (request, response) => {
   });
 }
 
+module.exports.getOrders = (request, response) => {
+  const farmer_id = parseInt(request.params.farmer_id)
+  db.getPool().query('select * ' +
+  'from orders ' +
+  'where status not in (\'Done\', \'Rejected\') ' +
+  'and farmer_id = ' + farmer_id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+}
+
 module.exports.updateGardenTemperatureAndWaterEveryHour = () => {
   db.getPool().query('update nursery_garden ' +
   'set water = water - 1, temperature = temperature - 0.5;', () => {})
