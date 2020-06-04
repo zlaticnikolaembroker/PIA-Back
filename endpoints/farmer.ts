@@ -195,6 +195,20 @@ module.exports.getSeedlingInfo = (request, response) => {
   });
 }
 
+module.exports.getGardenPreparations = (request, response) => {
+  const garden_id = parseInt(request.params.garden_id)
+  db.getPool().query('select ngp.amount, p.id, p.name, p.acceleration_time ' +
+  'from nursery_garden_product ngp ' +
+  'join products p on p.id = ngp.id_product ' +
+  'join users u on u.id = p.company_id ' + 
+  'where p.type = \'Preparation\' and ngp.amount > 0 and ngp.id_nursery_garden = ' + garden_id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+}
+
 module.exports.getProducts = (request, response) => {
   const garden_id = parseInt(request.params.garden_id)
   db.getPool().query('select ngp.amount, p.name, p.type, p.time_to_grow, p.acceleration_time, u.fullname ' +

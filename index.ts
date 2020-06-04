@@ -58,6 +58,7 @@ app.get('/farmer/online_shop/:id', farmer.getProductForOnlineShop);
 app.get('/farmer/orders/:garden_id', farmer.getOrders);
 app.get('/farmer/products/:garden_id', farmer.getProducts);
 app.get('/farmer/seedling/:seedling_id', farmer.getSeedlingInfo);
+app.get('/farmer/garden/preparations/:garden_id', farmer.getGardenPreparations);
 app.post('/farmer/garden/temperature_change', farmer.updateGardenTemperature);
 app.post('/farmer/garden/water_change', farmer.updateGardenWater);
 app.post('/farmer/create_order', farmer.createOrder);
