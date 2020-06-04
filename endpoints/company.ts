@@ -196,126 +196,174 @@ module.exports.getCompanyOrders = (request, response) => {
   });
 }
 
-module.exports.updateOrderStatus = (request, response) => {
+module.exports.updateOrderStatus = async (request, response) => {
   const order_id = request.body.id;
   const newStatus = request.body.status;
-  let updateOrderStatusQuery = newStatus === "Done" ? 'update orders set status = \'' + newStatus + '\', date_of_completion = current_date where id = ' + order_id : 'update orders set status = \'' + newStatus + '\' where id = ' + order_id;
-  db.getPool().query(updateOrderStatusQuery, (error, results) => {
-    if (error) {
-      return response.status(500).json(error);
+  const updateOrderStatusQuery = newStatus === "Done" ? 'update orders set status = \'' + newStatus + '\', date_of_completion = current_date where id = ' + order_id : 'update orders set status = \'' + newStatus + '\' where id = ' + order_id;
+  let result = await db.getPool().query(updateOrderStatusQuery).catch(err => {
+    return err;
+  });
+  if (!result.rows) {
+    console.log(1);
+    console.log(result);
+    return response.status(500).json(result);
+  }
+  if (newStatus === 'On Wait' || newStatus === "In Progress") {
+    result = await db.getPool().query('select company_id from orders where id = ' + order_id).catch(err => {
+      return err;
+    });
+    if (!result.rows) {
+      console.log(2);
+      console.log(result);
+      return response.status(200).json(false);
     }
-    if (newStatus === 'On Wait' || newStatus === "In Progress") {
-      db.getPool().query('select company_id from orders where id = ' + order_id, (error, results) => {
-        if (error) {
-          return response.status(200).json(false);
-        }
-        const company_id = results.rows[0].company_id
-        db.getPool().query('select id from courier where company_id = ' + company_id + ' and order_id is null limit 1', (error, results) => {
-          if (error || results.rows.length == 0) {
-            return response.status(200).json(false);
-          }
-          const courier_id = results.rows[0].id;
-          db.getPool().query('update courier set order_id = ' + order_id + ' where id = ' + courier_id, (error, results) => {
-            if (error) {
-              return response.status(200).json(false);
-            }
-            if (newStatus === "On Wait") {
-              db.getPool().query('update orders set status = \'In Progress\' where id = ' + order_id, (error, results) => {
-                if (error) {
-                  return response.status(500).json(error);
-                }
-                return response.status(200).json(order_id);
-              });
-            } else {
-              return response.status(200).json(true);
-            }
-          });
-        });
+    const company_id = result.rows[0].company_id;
+    result = await db.getPool().query('select id from courier where company_id = ' + company_id + ' and order_id is null limit 1').catch(err => {
+      return err;
+    });
+    if (!result.rows || result.rows.length == 0) {
+      console.log(3);
+      console.log(result);
+      return response.status(200).json(false);
+    }
+    const courier_id = result.rows[0].id;
+    result = await db.getPool().query('update courier set order_id = ' + order_id + ' where id = ' + courier_id).catch(err => {
+      return err;
+    });
+    if (!result.rows) {
+      console.log(4);
+      console.log(result);
+      return response.status(200).json(false);
+    }
+    if (newStatus === "On Wait") {
+      result = await db.getPool().query('update orders set status = \'In Progress\' where id = ' + order_id).catch(err => {
+        return err;
       });
+      if (!result.rows) {
+        console.log(5);
+        console.log(result);
+        return response.status(500).json(result);
+      }
+      return response.status(200).json(order_id);
     } else {
-      if (newStatus === 'Done' || newStatus === 'Rejected') {
-        db.getPool().query('select company_id ' +
-        'from orders o ' +
-        'where o.id = ' + order_id , (error, results) => {
-          if (error || results.rows.length == 0) {
-            return response.status(200).json(false);
-          }
-          const company_id = results.rows[0].company_id;
-
-          db.getPool().query('select id ' +
-          'from courier c ' +
-          'where c.order_id = ' + order_id , (error, results) => {
-            if (error || results.rows.length == 0) {
-              return response.status(200).json(false);
-            }
-            const courier_od = results.rows[0].id;
-            db.getPool().query('select id ' +
-            'from orders o ' +
-            'where status = \'On Wait\' and company_id = ' + company_id , (error, results) => {
-              if (error) {
-                return response.status(500).json(false);
-              }
-              const new_order_id = results.rows.length == 0 ? null : results.rows[0].id;
-              db.getPool().query('update courier set order_id = ' + new_order_id + ' where id = ' + courier_od, (error, results) => {
-                if (error) {
-                  return response.status(500).json(error);
-                }
-                if (new_order_id === null) {
-                  db.getPool().query('select op.product_id, op.amount ' +
-                  'from orders o ' +
-                  'join order_product op on op.order_id = o.id ' +
-                  'where op.order_id = ' + order_id , (error, results) => {
-                    if (error) {
-                      return response.status(500).json(error);
-                    }
-                    results.rows.forEach(async element => {
-                      const result = await updateProductAmount(element.product_id, element.amount);
-                      if (result != null) {
-                        return response.status(500).json(result);
-                      }
-                    });
-                    return response.status(200).json(true);
-                  });
-                }
-                db.getPool().query('update orders set status = \'In Progress\' where id = ' + new_order_id, (error, results) => {
-                  if (error) {
-                    return response.status(500).json(error);
-                  }
-                  if (newStatus !== "Done") {
-                    return response.status(200).json(new_order_id);
-                  }
-                  db.getPool().query('select op.product_id, op.amount ' +
-                  'from orders o ' +
-                  'join order_product op on op.order_id = o.id ' +
-                  'where op.order_id = ' + order_id , (error, results) => {
-                    if (error) {
-                      return response.status(500).json(error);
-                    }
-                    results.rows.forEach(async element => {
-                      const result = await updateProductAmount(element.product_id, element.amount);
-                      if (result != null) {
-                        return response.status(500).json(result);
-                      }
-                    });
-                    return response.status(200).json(new_order_id);
-                  });
-                });
-              });
-            });
-          });
-        });
-      } else {
+      return response.status(200).json(true);
+    }
+  } else {
+    if (newStatus === 'Done' || newStatus === 'Rejected') {
+      result = await db.getPool().query('select company_id ' +
+      'from orders o ' +
+      'where o.id = ' + order_id).catch(err => {
+        return err;
+      });
+      if (!result.rows || result.rows.length == 0) {
+        console.log(6);
+        console.log(result);
         return response.status(200).json(false);
       }
+      const company_id = result.rows[0].company_id;
+
+      result = await db.getPool().query('select id ' +
+      'from courier c ' +
+      'where c.order_id = ' + order_id).catch(err => {
+        return err;
+      });
+
+      if (!result.rows || result.rows.length == 0) {
+        console.log(7);
+        console.log(result);
+        return response.status(200).json(false);
+      }
+      const courier_od = result.rows[0].id;
+
+      result = await db.getPool().query('select id ' +
+      'from orders o ' +
+      'where status = \'On Wait\' and company_id = ' + company_id).catch(err => {
+        return err;
+      });
+      if (!result.rows) {
+        console.log(8);
+        console.log(result);
+        return response.status(500).json(false);
+      }
+
+      const new_order_id = result.rows.length == 0 ? null : result.rows[0].id;
+
+      result = await db.getPool().query('update courier set order_id = ' + new_order_id + ' where id = ' + courier_od).catch(err => {
+        return err;
+      });
+      if (!result.rows) {
+        console.log(9);
+        console.log(result);
+        return response.status(500).json(result);
+      }
+      
+      if (new_order_id === null) {
+        result = await db.getPool().query('select op.product_id, op.amount ' +
+        'from orders o ' +
+        'join order_product op on op.order_id = o.id ' +
+        'where op.order_id = ' + order_id).catch(err => {
+          return err;
+        });
+        if (!result.rows) {
+          console.log(10);
+          console.log(result);
+          return response.status(500).json(result);
+        }
+        for(let i = 0; i< result.rows.length; i++) {
+          const result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
+          if (!result2.rows) {
+            console.log(11);
+            console.log(result2);
+            return response.status(500).json(result2);
+          }
+        }
+        return response.status(200).json(true);
+      }
+
+      result = await db.getPool().query('update orders set status = \'In Progress\' where id = ' + new_order_id).catch(err => {
+        return err;
+      });
+      if (!result.rows) {
+        console.log(12);
+        console.log(result);
+        return response.status(500).json(result);
+      }
+
+      if (newStatus !== "Done") {
+        return response.status(200).json(new_order_id);
+      }
+
+      result = await db.getPool().query('select op.product_id, op.amount ' +
+      'from orders o ' +
+      'join order_product op on op.order_id = o.id ' +
+      'where op.order_id = ' + order_id).catch(err => {
+        return err;
+      });
+      if (!result.rows) {
+        console.log(13);
+        console.log(result);
+        return response.status(500).json(result);
+      }
+
+      for(let i = 0; i< result.rows.length; i++) {
+        const result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
+        if (!result2.rows) {
+          console.log(14);
+          console.log(result2);
+          return response.status(500).json(result2);
+        }
+      }
+      return response.status(200).json(new_order_id);
+
+    } else {
+      return response.status(200).json(false);
     }
-  });
+  }
 }
 
 async function updateProductAmount(product_id, amount) {
-  db.getPool().query('update products set available = available - ' + amount + ' where id =' + product_id, (error, results) => {
-    if (error) {
-      return error;
-    }
-    return null;
+  const result = await db.getPool().query('update products set available = available - ' + amount + ' where id =' + product_id).catch(err => {
+    return err;
   });
+  return result;
 }
