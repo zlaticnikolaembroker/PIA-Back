@@ -97,11 +97,12 @@ module.exports.addProduct = (request, response) => {
   const name = request.body.name;
   const available = request.body.available;
   const price = request.body.price;
-  const type = request.body.archived;
+  const type = request.body.type;
   const time_to_grow = request.body.time_to_grow;
   const acceleration_time = request.body.acceleration_time;
+
   db.getPool().query('insert into products(name, price, available, company_id, type, time_to_grow, acceleration_time) values( \'' + 
-                      name + '\' , \'' + price + '\' , \'' + available + ', ' + company_id + '\''  + type +  '\',' + time_to_grow + ',' + acceleration_time + ');', (error, results) => {
+                      name + '\' , ' + price + ' , ' + available + ', ' + company_id + ', \'' + type +  '\',' + time_to_grow + ',' + acceleration_time + ');', (error, results) => {
     if (error) {
       return response.status(500).json(error);
     }
