@@ -40,7 +40,7 @@ module.exports.getFarmerGarden = (request, response) => {
       ...results.rows[0],
       seedlings : [],
     }
-    db.getPool().query('select s.name, (progress * 1.0 / 100) as progress, x, y, u.fullname as producer ' +
+    db.getPool().query('select s.id, s.name, (progress * 1.0 / 100) as progress, x, y, u.fullname as producer ' +
     'from seedling s ' +
     'join users u on u.id = s.id_company ' +
     'where id_nursery_garden =' + id, (error, results) => {
@@ -179,6 +179,19 @@ module.exports.getOrders = (request, response) => {
       return response.status(500).json(error);
     }
     return response.status(200).json(results.rows);
+  });
+}
+
+module.exports.getSeedlingInfo = (request, response) => {
+  const seedling_id = parseInt(request.params.seedling_id)
+  db.getPool().query('select s.id, s.name, (progress * 1.0 / 100) as progress, x, y, u.fullname as producer ' +
+  'from seedling s ' +
+  'join users u on u.id = s.id_company ' +
+  'where s.id =' + seedling_id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows[0]);
   });
 }
 
