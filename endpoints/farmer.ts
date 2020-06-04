@@ -248,6 +248,20 @@ module.exports.usePreparation = async (request, response) => {
   return response.status(200).json();
 }
 
+module.exports.removeSeedling = async (request, response) => {
+  const seedling_id = request.body.seedling_id;
+  let result = await db.getPool().query('UPDATE seedling ' +
+    'SET x = null, y = null, id_nursery_garden = null ' + 
+    'WHERE id = ' + seedling_id +';' ).catch(err => {
+    return err;
+  });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+
+  return response.status(200).json();
+}
+
 module.exports.updateGardenTemperatureAndWaterEveryHour = () => {
   db.getPool().query('update nursery_garden ' +
   'set water = water - 1, temperature = temperature - 0.5;', () => {})
