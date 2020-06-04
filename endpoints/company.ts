@@ -310,9 +310,15 @@ module.exports.updateOrderStatus = async (request, response) => {
           return response.status(500).json(result);
         }
         for(let i = 0; i< result.rows.length; i++) {
-          const result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
+          let result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
           if (!result2.rows) {
             console.log(11);
+            console.log(result2);
+            return response.status(500).json(result2);
+          }
+          result2 = await updateProductAmountInWarehouse(result.rows[i].product_id, result.rows[i].amount, order_id);
+          if (!result2.rows) {
+            console.log(111);
             console.log(result2);
             return response.status(500).json(result2);
           }
@@ -346,9 +352,15 @@ module.exports.updateOrderStatus = async (request, response) => {
       }
 
       for(let i = 0; i< result.rows.length; i++) {
-        const result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
+        let result2 = await updateProductAmount(result.rows[i].product_id, result.rows[i].amount);
         if (!result2.rows) {
           console.log(14);
+          console.log(result2);
+          return response.status(500).json(result2);
+        }
+        result2 = await updateProductAmountInWarehouse(result.rows[i].product_id, result.rows[i].amount, order_id);
+        if (!result2.rows) {
+          console.log(141);
           console.log(result2);
           return response.status(500).json(result2);
         }
@@ -366,4 +378,26 @@ async function updateProductAmount(product_id, amount) {
     return err;
   });
   return result;
+}
+
+async function updateProductAmountInWarehouse(product_id, amount, order_id) {
+  let result = await db.getPool().query('select id_nursery_garden ' +
+  'from nursery_garden_order ' +
+  'where id_order =' + order_id).catch(err => {
+    return err;
+  });
+
+  if (!result.rows) {
+    return result;
+  }
+
+  result = await db.getPool().query('UPDATE nursery_garden_product SET amount = amount + ' + amount + ' WHERE id_nursery_garden= '+ +result.rows[0].id_nursery_garden +' and id_product = ' + product_id + '; ' +
+  'INSERT INTO nursery_garden_product (id_nursery_garden, id_product, amount) ' +
+  'SELECT '+ +result.rows[0].id_nursery_garden + ', ' + product_id+', ' + amount + 
+  'WHERE NOT EXISTS (SELECT 1 FROM nursery_garden_product WHERE id_nursery_garden = '+ +result.rows[0].id_nursery_garden+' and id_product =  ' + product_id+');').catch(err => {
+    return err;
+  });
+
+  return result;
+  
 }
