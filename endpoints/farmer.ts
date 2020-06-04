@@ -195,6 +195,20 @@ module.exports.getSeedlingInfo = (request, response) => {
   });
 }
 
+module.exports.getProducts = (request, response) => {
+  const garden_id = parseInt(request.params.garden_id)
+  db.getPool().query('select ngp.amount, p.name, p.type, p.time_to_grow, p.acceleration_time, u.fullname ' +
+  'from nursery_garden_product ngp ' +
+  'join products p on p.id = ngp.id_product ' +
+  'join users u on u.id = p.company_id ' + 
+  'where ngp.id_nursery_garden = ' + garden_id, (error, results) => {
+    if (error) {
+      return response.status(500).json(error);
+    }
+    return response.status(200).json(results.rows);
+  });
+}
+
 module.exports.getGardenPreparations = (request, response) => {
   const garden_id = parseInt(request.params.garden_id)
   db.getPool().query('select ngp.amount, p.id, p.name, p.acceleration_time ' +
@@ -209,18 +223,29 @@ module.exports.getGardenPreparations = (request, response) => {
   });
 }
 
-module.exports.getProducts = (request, response) => {
-  const garden_id = parseInt(request.params.garden_id)
-  db.getPool().query('select ngp.amount, p.name, p.type, p.time_to_grow, p.acceleration_time, u.fullname ' +
-  'from nursery_garden_product ngp ' +
-  'join products p on p.id = ngp.id_product ' +
-  'join users u on u.id = p.company_id ' + 
-  'where ngp.id_nursery_garden = ' + garden_id, (error, results) => {
-    if (error) {
-      return response.status(500).json(error);
-    }
-    return response.status(200).json(results.rows);
+module.exports.usePreparation = async (request, response) => {
+  const seedling_id = request.body.seedling_id;
+  const preparation_id = request.body.preparation_id;
+  const garden_id = request.body.garden_id;
+  const acceleration_time = request.body.acceleration_time;
+  let result = await db.getPool().query('UPDATE seedling ' +
+    'SET progress = progress + ' + acceleration_time  + ' ' + 
+    'WHERE id = ' + seedling_id +';' ).catch(err => {
+    return err;
   });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+  result = await db.getPool().query('UPDATE nursery_garden_product ' +
+    'SET amount= amount - 1 ' +
+    'WHERE id_nursery_garden =  ' + garden_id +' and id_product = ' + preparation_id +';' ).catch(err => {
+    return err;
+  });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+
+  return response.status(200).json();
 }
 
 module.exports.updateGardenTemperatureAndWaterEveryHour = () => {
