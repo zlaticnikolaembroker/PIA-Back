@@ -318,7 +318,7 @@ module.exports.updateOrderStatus = async (request, response) => {
             return response.status(500).json(result2);
           }
           result2 = await updateProductAmountInWarehouse(result.rows[i].product_id, result.rows[i].amount, order_id);
-          if (!result2.rows) {
+          if (!result2[0].rows || !result2[1].rows) {
             console.log(111);
             console.log(result2);
             return response.status(500).json(result2);
@@ -360,7 +360,7 @@ module.exports.updateOrderStatus = async (request, response) => {
           return response.status(500).json(result2);
         }
         result2 = await updateProductAmountInWarehouse(result.rows[i].product_id, result.rows[i].amount, order_id);
-        if (!result2.rows) {
+        if (!result2[0].rows || !result2[1].rows) {
           console.log(141);
           console.log(result2);
           return response.status(500).json(result2);
@@ -385,6 +385,8 @@ async function updateProductAmountInWarehouse(product_id, amount, order_id) {
   let result = await db.getPool().query('select id_nursery_garden ' +
   'from nursery_garden_order ' +
   'where id_order =' + order_id).catch(err => {
+    console.log(2121);
+    console.log(err);
     return err;
   });
 
@@ -396,6 +398,8 @@ async function updateProductAmountInWarehouse(product_id, amount, order_id) {
   'INSERT INTO nursery_garden_product (id_nursery_garden, id_product, amount) ' +
   'SELECT '+ +result.rows[0].id_nursery_garden + ', ' + product_id+', ' + amount + 
   'WHERE NOT EXISTS (SELECT 1 FROM nursery_garden_product WHERE id_nursery_garden = '+ +result.rows[0].id_nursery_garden+' and id_product =  ' + product_id+');').catch(err => {
+    console.log(2222);
+    console.log(err);
     return err;
   });
 
