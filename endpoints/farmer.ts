@@ -225,7 +225,7 @@ module.exports.getGardenPreparations = (request, response) => {
 
 module.exports.getGardenSeedlings = (request, response) => {
   const garden_id = parseInt(request.params.garden_id)
-  db.getPool().query('select ngp.amount, p.id, p.name, p.time_to_grow ' +
+  db.getPool().query('select ngp.amount, p.id, p.name, p.time_to_grow, p.company_id ' +
   'from nursery_garden_product ngp ' +
   'join products p on p.id = ngp.id_product ' +
   'join users u on u.id = p.company_id ' + 
@@ -267,6 +267,24 @@ module.exports.removeSeedling = async (request, response) => {
   let result = await db.getPool().query('UPDATE seedling ' +
     'SET x = null, y = null, id_nursery_garden = null ' + 
     'WHERE id = ' + seedling_id +';' ).catch(err => {
+    return err;
+  });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+
+  return response.status(200).json();
+}
+
+module.exports.plantSeedling = async (request, response) => {
+  const x = request.body.x;
+  const y = request.body.y;
+  const garden_id = request.body.garden_id;
+  const name = request.body.name;
+  const company_id = request.body.company_id;
+  const time_to_grow = request.body.time_to_grow;
+  let result = await db.getPool().query('insert into seedling(x, y, id_nursery_garden, progress, name, id_company, days_to_grow) ' +
+  'Values('+x+', '+ y+ ', '+ garden_id +', 0, \' '+ name +'\', ' + company_id + ', ' + time_to_grow + ') ;' ).catch(err => {
     return err;
   });
   if (!result.rows) {

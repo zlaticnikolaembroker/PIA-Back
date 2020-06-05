@@ -65,6 +65,7 @@ app.post('/farmer/garden/water_change', farmer.updateGardenWater);
 app.post('/farmer/create_order', farmer.createOrder);
 app.post('/farmer/use_preparation', farmer.usePreparation);
 app.post('/farmer/remove_seeding', farmer.removeSeedling);
+app.post('/farmer/plant_seedling', farmer.plantSeedling);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
