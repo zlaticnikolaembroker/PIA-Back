@@ -45,19 +45,42 @@ module.exports.getUnconfirmedUsers = (request, response) => {
   });
 }
 
-module.exports.updateUserConfirmation = (request, response) => {
+module.exports.updateUserConfirmation = async (request, response) => {
 
   const userId = request.body.id;
   const confirmation = request.body.confirmation;
 
   const querystring = 'UPDATE users set confirmed = \'' + confirmation + '\' where id = ' + userId;
 
-  db.getPool().query(querystring, (error , results) => {
-    if (error) {
-      return response.status(500).json(error)
-    }
-    return response.status(200).json();
+  let result = await db.getPool().query(querystring).catch(err => {
+    return err;
   });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+  const checkIfUserIsCompanyQueryString = 'select role_id from users where id = $1;'
+  result = await db.getPool().query(checkIfUserIsCompanyQueryString, [userId]).catch(err => {
+    return err;
+  });
+  if (!result.rows) {
+    return response.status(500).json(result);
+  }
+  if (+result.rows[0].role_id != 2){
+    return response.status(200).json();
+  }
+
+  const addCouriersQueryStrint = 'INSERT INTO courier(company_id, name) ' +
+    'VALUES ($1, $2);';
+  for(let i = 0; i < 5; i++){
+    result = await db.getPool().query(addCouriersQueryStrint, [userId, userId + ' ' + i]).catch(err => {
+      return err;
+    });
+    if (!result.rows) {
+      return response.status(500).json(result);
+    }
+  }
+
+  return response.status(200).json();
 }
 
 module.exports.createUser = (request, response) => {
